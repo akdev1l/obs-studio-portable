@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 # Portable OBS Studio launcher
 
+# Check if we are in a container (toolbox/distrobox) and if we are running in our prepared container image
+# See: https://github.com/ublue-os/obs-studio-portable/blob/main/obs-config-fix.sh
+if [ -f /run/.containerenv ] && [ -x /etc/profile.d/99-obs-config-fix.sh ]; then
+    /etc/profile.d/99-obs-config-fix.sh
+fi
+
 if [ -e /etc/os-release ] && grep --quiet UBUNTU_CODENAME /etc/os-release; then
     DISTRO_CODENAME=$(grep UBUNTU_CODENAME /etc/os-release | cut -d'=' -f2 | sed 's/"//g')
     if [ "${DISTRO_CODENAME}" != "TARGET_CODENAME" ]; then
@@ -18,11 +24,6 @@ export LD_LIBRARY_PATH="${PORTABLE_DIR}/bin/64bit":"${PORTABLE_DIR}/obs-plugins/
 if [ ! -d "${PORTABLE_DIR}/bin/64bit" ]; then
     echo "ERROR! Could not find ${PORTABLE_DIR}/bin/64bit."
     exit 1
-fi
-
-# If we're in an OBS Studio Portable container, run the config fix script
-if [ -x /etc/profile.d/99-obs-config-fix.sh ]; then
-  /etc/profile.d/99-obs-config-fix.sh
 fi
 
 cd "${PORTABLE_DIR}/bin/64bit"
